@@ -33,3 +33,6 @@ get-dev-dependencies:
 
 	echo "megacheck"
 	go get -u honnef.co/go/tools/cmd/megacheck
+
+	echo "gorilla/websocket"
+	go get -u github.com/gorilla/websocket
