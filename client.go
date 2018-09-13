@@ -43,14 +43,14 @@ func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
 	handshake := make(chan struct{}, 1)
 	ec := make(chan error, 1)
 
-	if err := c.On(OnConnection, func() {
+	if err = c.On(OnConnection, func() {
 		handshake <- struct{}{}
 	}); err != nil {
 		cancel()
 		return nil, err
 	}
 
-	if err := c.On(OnError, func(err error) {
+	if err = c.On(OnError, func(err error) {
 		ec <- err
 	}); err != nil {
 		cancel()
