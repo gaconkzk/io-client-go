@@ -19,9 +19,6 @@ test:
 get-dev-dependencies:
 	echo "Installing developer tools."
 
-	echo "cover"
-	go get -u golang.org/x/tools/cmd/cover
-
 	echo "goveralls"
 	go get -u github.com/mattn/goveralls
 
