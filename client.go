@@ -439,7 +439,7 @@ func (c *Client) callLoopEvent(namespace string, event string, args ...interface
 		return
 	}
 
-	_ = h.Call(&struct{}{})
+	_ = h.Call()
 }
 
 func (c *Client) incomingHandler(msg *protocol.Message) {
@@ -554,7 +554,7 @@ func (c *Client) handleIncomingAckResponse(msg *protocol.Message) {
 
 func (c *Client) handleIncomingNamespaceConnection(msg *protocol.Message) {
 	if h, ok := c.getHandler(msg.Namespace, msg.Method); ok {
-		_ = h.Call(nil)
+		_ = h.Call()
 	}
 }
 
