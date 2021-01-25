@@ -37,3 +37,6 @@ coverage.html
 coverage.out
 
 *.coverprofile
+
+*/node_modules
+*/yarn.lock

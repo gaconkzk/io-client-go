@@ -1,11 +1,11 @@
-package gosocketio
+package socketio
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/wedeploy/gosocketio/ack"
-	"github.com/wedeploy/gosocketio/internal/protocol"
+	"github.com/gaconkzk/socket.io-client-go/ack"
+	"github.com/gaconkzk/socket.io-client-go/internal/protocol"
 )
 
 // NewNamespace creates a namespace.

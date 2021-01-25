@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/url"
 	"os"
 	"time"
 
-	"github.com/wedeploy/gosocketio"
-	"github.com/wedeploy/gosocketio/websocket"
+	socketio "github.com/gaconkzk/socket.io-client-go"
+	"github.com/gaconkzk/socket.io-client-go/websocket"
 )
 
 // Route to fly.
@@ -39,25 +40,28 @@ func main() {
 		Host:   "localhost:3000",
 	}
 
-	c, err := gosocketio.Connect(u, websocket.NewTransport())
+	c, err := socketio.Connect(u, websocket.NewTransport())
 
 	if err != nil {
-		panic(err) // you should prefer returning errors than panicking
+		log.Fatalf("error, %v", err)
+		// panic(err) // you should prefer returning errors than panicking
 	}
 
-	if err := c.On(gosocketio.OnError, errorHandler); err != nil {
+	nsp, err := c.Of("accountant")
+	if err := nsp.On(socketio.OnError, errorHandler); err != nil {
+		log.Fatalf("error, namespace %v", err)
 		panic(err)
 	}
 
-	if err := c.On(gosocketio.OnDisconnect, disconnectHandler); err != nil {
+	if err := nsp.On(socketio.OnDisconnect, disconnectHandler); err != nil {
 		panic(err)
 	}
 
-	if err := c.On("flight", flightHandler); err != nil {
+	if err := nsp.On("flight", flightHandler); err != nil {
 		panic(err)
 	}
 
-	if err := c.On("skip", skipHandler); err != nil {
+	if err := nsp.On("skip", skipHandler); err != nil {
 		panic(err)
 	}
 
@@ -66,7 +70,7 @@ func main() {
 
 	g := goodbye{c, cancel}
 
-	if err := c.On("goodbye", g.Handler); err != nil {
+	if err := nsp.On("goodbye", g.Handler); err != nil {
 		panic(err)
 	}
 
@@ -81,7 +85,7 @@ func main() {
 	}
 }
 
-func doSomething(c *gosocketio.Client) {
+func doSomething(c *socketio.Client) {
 	index1 := rand.Intn(len(Airports))
 	index2 := rand.Intn(len(Airports))
 
@@ -98,7 +102,7 @@ func doSomething(c *gosocketio.Client) {
 	}
 }
 
-func bookHotelRoom(c *gosocketio.Client, hotel string) {
+func bookHotelRoom(c *socketio.Client, hotel string) {
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -133,7 +137,7 @@ func skipHandler(vehicle string) {
 }
 
 type goodbye struct {
-	client *gosocketio.Client
+	client *socketio.Client
 	cancel context.CancelFunc
 }
 

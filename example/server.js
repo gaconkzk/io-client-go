@@ -7,9 +7,9 @@ app.listen(3000)
 
 console.log('Listening at http://localhost:3000/')
 
-function handler (req, res) {
+function handler(req, res) {
   res.writeHead(200)
-  res.end('Testing server for http://github.com/wedeploy/gosocketio example.')
+  res.end('Testing server for http://github.com/gaconkzk/gosocketio example.')
 }
 
 let vehicles = ['Falcon', 'airplane', 'balloon', 'drone']
@@ -18,11 +18,11 @@ let people = ['Stephen', 'Albert', 'Thomas', 'George', 'Michael', 'Linus']
 let rooms = ['King', 'Queen', 'Presidential suite']
 
 class AirNotices {
-  getStatusFunc (socket) {
+  getStatusFunc(socket) {
     return () => this.getStatus(socket)
   }
 
-  getStatus (socket) {
+  getStatus(socket) {
     let vehicle = vehicles[Math.floor(Math.random() * vehicles.length)]
     let index1 = Math.floor(Math.random() * airports.length)
     let index2 = Math.floor(Math.random() * airports.length)
@@ -34,12 +34,62 @@ class AirNotices {
 
     socket.emit('flight', vehicle, {
       From: airports[index1],
-      To: airports[index2]
+      To: airports[index2],
     })
   }
 }
 
 let an = new AirNotices()
+
+io.onconnection = (socket) => {
+  console.log('Connecting %s.', socket.id)
+
+  let anInterval = setInterval(an.getStatusFunc(socket), 2500)
+
+  let scheduledGoodbyeTimeout = setTimeout(function () {
+    console.log('Sending goodbye message to client.')
+    socket.emit('goodbye')
+  }, 120000)
+
+  socket.on('book_hotel_for_tonight', (location, fn) => {
+    // fail booking 50% of the requests
+    if (Math.random() > 0.5) {
+      console.error('Failing to book a room at %s', location)
+      return
+    }
+
+    console.log('Hotel room booked at %s Airport Hotel.', location)
+    let indexPerson = Math.floor(Math.random() * people.length)
+    let indexRoom = Math.floor(Math.random() * rooms.length)
+
+    fn({
+      Name: people[indexPerson],
+      Location: location,
+      Room: rooms[indexRoom],
+      Price: Math.ceil(Math.random() * 1000),
+    })
+  })
+
+  socket.on('find_tickets', (route) => {
+    console.log(
+      'Quote for tickets from %s to %s requested.',
+      route.From,
+      route.To,
+    )
+  })
+
+  socket.on('error', (err) => {
+    console.error(err)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('Disconnecting %s.', socket.id)
+    clearInterval(anInterval)
+    clearInterval(scheduledGoodbyeTimeout)
+  })
+}
+
+const nsp = io.of('airports')
 
 io.on('connection', function (socket) {
   console.log('Connecting %s.', socket.id)
@@ -66,12 +116,64 @@ io.on('connection', function (socket) {
       Name: people[indexPerson],
       Location: location,
       Room: rooms[indexRoom],
-      Price: Math.ceil(Math.random() * 1000)
+      Price: Math.ceil(Math.random() * 1000),
     })
   })
 
   socket.on('find_tickets', (route) => {
-    console.log('Quote for tickets from %s to %s requested.', route.From, route.To)
+    console.log(
+      'Quote for tickets from %s to %s requested.',
+      route.From,
+      route.To,
+    )
+  })
+
+  socket.on('error', (err) => {
+    console.error(err)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('Disconnecting %s.', socket.id)
+    clearInterval(anInterval)
+    clearInterval(scheduledGoodbyeTimeout)
+  })
+})
+
+nsp.on('connection', function (socket) {
+  console.log('airport Connecting %s.', socket.id)
+
+  let anInterval = setInterval(an.getStatusFunc(socket), 2500)
+
+  let scheduledGoodbyeTimeout = setTimeout(function () {
+    console.log('Sending goodbye message to client.')
+    socket.emit('goodbye')
+  }, 120000)
+
+  socket.on('book_hotel_for_tonight', (location, fn) => {
+    // fail booking 50% of the requests
+    if (Math.random() > 0.5) {
+      console.error('Failing to book a room at %s', location)
+      return
+    }
+
+    console.log('Hotel room booked at %s Airport Hotel.', location)
+    let indexPerson = Math.floor(Math.random() * people.length)
+    let indexRoom = Math.floor(Math.random() * rooms.length)
+
+    fn({
+      Name: people[indexPerson],
+      Location: location,
+      Room: rooms[indexRoom],
+      Price: Math.ceil(Math.random() * 1000),
+    })
+  })
+
+  socket.on('find_tickets', (route) => {
+    console.log(
+      'Quote for tickets from %s to %s requested.',
+      route.From,
+      route.To,
+    )
   })
 
   socket.on('error', (err) => {

@@ -1,16 +1,17 @@
-# golang socket.io [<img src="https://avatars3.githubusercontent.com/u/10002920" alt="WeDeploy logo" width="90" height="90" align="right">](https://wedeploy.com/)
+Forked here since I need to make some customization for this to worked on my personal project
 
-[![GoDoc](https://godoc.org/github.com/wedeploy/gosocketio?status.svg)](https://godoc.org/github.com/wedeploy/gosocketio) [![Build Status](https://travis-ci.org/wedeploy/gosocketio.svg?branch=master)](https://travis-ci.org/wedeploy/gosocketio)
-
-golang socket.io is an implementation for the [socket.io](https://socket.io) protocol in Go. There is a lack of specification for the socket.io protocol, so reverse engineering is the easiest way to find out how it works.
+golang socket.io is an implementation for the [socket.io](https://io) protocol in Go. There is a lack of specification for the socket.io protocol, so reverse engineering is the easiest way to find out how it works.
 
 **This is a work in progress. Many features, such as middleware and binary support, are missing.**
 
 **golang socket.io is an adapted work from [github.com/graarh/golang-socketio](https://github.com/graarh/golang-socketio).**
 
+**golang socket.io is forked from [github.com/LiferayCloud/archived-gosocketio](https://github.com/LiferayCloud/archived-gosocketio).**
+
 ---
 
 ## on "connection", "error", and "disconnection"
+
 socket.io has three special events it triggers on the client-side and you should not emit them on your own programs.
 
 **Wait for the socket.io connection event before emitting messages or you risk losing them** due in an unpredictable fashion (due to concurrency: connection latency, server load, etc.). For the default namespace this is automatically handled on gosocketio.Connect.
@@ -38,6 +39,7 @@ The reason why you probably want to use a `select` receiving a second channel, s
 The default namespace is automatically ready after establishing the socket.io session. Therefore, `*gosocketio.Client` doesn't expose a `Ready()` method.
 
 ## Connecting to a socket.io server with a custom namespace
+
 You can connect to a namespace and start emitting messages to it with:
 
 ```go
@@ -66,11 +68,11 @@ If err := exampleNamespace.Emit("list", "friends"); err != nil {
 
 1. `npm install` to install the dependencies for the example server
 2. `node server.js`
-2. `go run example.go`
+3. `go run example.go`
 
-If you need to improve this library you should consider using these tools:
+If you need to improve this library you should consider reading full client of original socketio for reference:
 
-* [Charles Proxy](https://www.charlesproxy.com)
-* [Wireshark WebSocket wiki page](https://wiki.wireshark.org/WebSocket)
-
-This library is used by the [WeDeploy](https://wedeploy.com) Command-Line Interface tool to open a shell and execute commands on Docker container services.
+- [github.com/socketio/socket.io-client](https://github.com/socketio/socket.io-client)
+- [github.com/socketio/engine.io-client](https://github.com/socketio/engine.io-client)
+- [github.com/socketio/socket.io-client-java](https://github.com/socketio/socket.io-client-java)
+- [github.com/socketio/engine.io-client-java](https://github.com/socketio/engine.io-client-java)

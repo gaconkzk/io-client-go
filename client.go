@@ -1,4 +1,4 @@
-package gosocketio
+package socketio
 
 import (
 	"context"
@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gaconkzk/socket.io-client-go/ack"
+	"github.com/gaconkzk/socket.io-client-go/internal/protocol"
+	"github.com/gaconkzk/socket.io-client-go/websocket"
 	ws "github.com/gorilla/websocket"
-	"github.com/wedeploy/gosocketio/ack"
-	"github.com/wedeploy/gosocketio/internal/protocol"
-	"github.com/wedeploy/gosocketio/websocket"
 )
 
 const (
