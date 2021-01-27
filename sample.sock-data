@@ -1,0 +1,19 @@
+42/accountant,
+[
+  "message",
+  {
+    args: [
+      {
+        id: "5e4914804961a596ba756476",
+        from_date: "MM/DD/YYYY",
+        to_date: "MM/DD/YYYY",
+        more_post: {
+          login_name: "av1174"
+        }
+      }
+    ],
+    event: "",
+    uuid: "b0211d60-6081-11eb-b942-8b3e0778ab4f",
+    ___Send: true,
+  }
+]

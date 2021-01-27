@@ -264,7 +264,6 @@ func (c *Client) inLoop() {
 			// gorilla's websocket (c *Conn) NextReader() is used internally by GetMessage
 			// see notes there about breaking out of the loop on error
 			pkg, err := c.getConn().GetMessage()
-
 			if err == websocket.ErrUnsupportedBinaryMessage ||
 				err == websocket.ErrBadBuffer ||
 				err == websocket.ErrPacketType {
@@ -355,6 +354,7 @@ type msgWriter struct {
 }
 
 func (c *Client) writeMessage(msg string) error {
+	fmt.Printf("write msg: %s\n", msg)
 	mw := &msgWriter{
 		msg: msg,
 	}
@@ -504,7 +504,6 @@ func (c *Client) getHandler(namespace, method string) (*Handler, bool) {
 
 func (c *Client) callLoopEvent(namespace string, event string, args ...interface{}) {
 	h, ok := c.getHandler(namespace, event)
-
 	if !ok {
 		return // event handler not found
 	}

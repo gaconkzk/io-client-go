@@ -7,7 +7,7 @@ import (
 // Message types.
 const (
 	// OnConnection for "connection" messages.
-	OnConnection = "connection"
+	OnConnection = "connect"
 
 	// OnDisconnect for "disconnect" messages.
 	OnDisconnect = "disconnect"

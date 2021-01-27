@@ -37,7 +37,7 @@ func Encode(msg *Message, args ...interface{}) (packet string, err error) {
 	}
 
 	if msg.Type == MessageTypeNamespace {
-		return fmt.Sprintf("%s%s", result, msg.Method), nil
+		return fmt.Sprintf("%s/%s", result, msg.Method), nil
 	}
 
 	if args == nil {
@@ -71,9 +71,9 @@ func typeToText(msgType string) (string, error) {
 		return PingMessage, nil
 	case MessageTypePong:
 		return PongMessage, nil
-	case MessageTypeEmpty, MessageTypeNamespace:
+	case MessageTypeEmpty:
 		return EmptyMessage, nil
-	case MessageTypeEmit, MessageTypeAckRequest:
+	case MessageTypeEmit, MessageTypeNamespace, MessageTypeAckRequest:
 		return CommonMessage, nil
 	case MessageTypeAckResponse:
 		return AckMessage, nil
