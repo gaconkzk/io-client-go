@@ -44,7 +44,7 @@ func main() {
 	query.Add("refresh_token", "8502bf8db18b8bfe1b95a03d6128309891275575")
 	u.RawQuery = query.Encode()
 
-	c, err := socketio.Connect(u, websocket.NewTransport())
+	c := socketio.NewClient(u, websocket.NewTransport())
 	c.On(socketio.OnConnection, func() {
 		fmt.Print("Connected")
 	})
@@ -59,6 +59,7 @@ func main() {
 		panic(err)
 	}
 
+	err := c.Connect()
 	if err != nil {
 		log.Fatalf("error, %v", err)
 		// panic(err) // you should prefer returning errors than panicking

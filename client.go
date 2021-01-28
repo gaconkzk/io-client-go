@@ -30,21 +30,33 @@ const (
 	defaultNamespace = ""
 )
 
+// NewClient just init the socket
+func NewClient(u url.URL, tr *websocket.Transport) *Client {
+	client := &Client{
+		url: u,
+		tr:  tr,
+	}
+
+	client.init()
+
+	return client
+}
+
 // Connect dials and waits for the "connection" event.
 // It blocks for the timeout duration. If the connection is not established in time,
 // it closes the connection and returns an error.
-func Connect(u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	return ConnectContext(context.Background(), u, tr)
+func (c *Client) Connect() (err error) {
+	return c.ConnectContext(context.Background(), c.url, c.tr)
 }
 
 // ConnectContext dials and waits for the "connection" event.
 // It blocks for the timeout duration. If the connection is not established in time,
 // it closes the connection and returns an error.
-func ConnectContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	c, err = dialContext(ctx, u, tr)
+func (c *Client) ConnectContext(ctx context.Context, u url.URL, tr *websocket.Transport) (err error) {
+	err = c.dialContext(ctx, u, tr)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), tr.PingTimeout)
@@ -57,14 +69,14 @@ func ConnectContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c 
 		handshake <- struct{}{}
 	}); err != nil {
 		cancel()
-		return nil, err
+		return err
 	}
 
 	if err = c.On(OnError, func(err error) {
 		ec <- err
 	}); err != nil {
 		cancel()
-		return nil, err
+		return err
 	}
 
 	select {
@@ -82,27 +94,24 @@ func ConnectContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c 
 	}
 
 	cancel()
-	return c, err
+	return err
 }
 
 // DialOnly connects to the host and initializes the socket.io protocol.
 // It doesn't wait for socket.io connection handshake.
 // You probably want to use Connect instead. Only exposed for debugging.
-func DialOnly(u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	return DialOnlyContext(context.Background(), u, tr)
+func (c *Client) DialOnly() (err error) {
+	return c.DialOnlyContext(context.Background(), c.url, c.tr)
 }
 
 // DialOnlyContext connects to the host and initializes the socket.io protocol.
 // It doesn't wait for socket.io connection handshake.
 // You probably want to use Connect instead. Only exposed for debugging.
-func DialOnlyContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	return dialContext(ctx, u, tr)
+func (c *Client) DialOnlyContext(ctx context.Context, u url.URL, tr *websocket.Transport) (err error) {
+	return c.dialContext(ctx, u, tr)
 }
 
-func dialContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Client, err error) {
-	c = &Client{}
-	c.init()
-
+func (c *Client) dialContext(ctx context.Context, u url.URL, tr *websocket.Transport) (err error) {
 	c.ctx, c.ctxCancel = context.WithCancel(ctx)
 
 	var query = u.Query()
@@ -119,13 +128,13 @@ func dialContext(ctx context.Context, u url.URL, tr *websocket.Transport) (c *Cl
 	c.connLocker.Unlock()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	go c.inLoop()
 	go c.outLoop()
 
-	return c, nil
+	return nil
 }
 
 // Header of engine.io to send and receive packets
@@ -159,6 +168,9 @@ type Client struct {
 	handlersLocker sync.RWMutex
 
 	out chan *msgWriter
+
+	url url.URL
+	tr  *websocket.Transport
 }
 
 type handlers struct {
