@@ -83,7 +83,7 @@ func NewHandler(f interface{}) (*Handler, error) {
 	numIn := fType.NumIn()
 
 	if isVariadicNonInterface(fType) {
-		return nil, errors.New("support for variadic is only partially implemented; see https://github.com/gaconkzk/goio-client-go/issues/1")
+		return nil, errors.New("support for variadic is only partially implemented;")
 	}
 
 	h := &Handler{

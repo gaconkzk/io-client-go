@@ -41,12 +41,18 @@ func main() {
 	}
 
 	var query = u.Query()
-	query.Add("refresh_token", "8502bf8db18b8bfe1b95a03d6128309891275575")
+	query.Add("refresh_token", "f8819076f189f454f428382392491343f457c4bc")
 	u.RawQuery = query.Encode()
 
 	c := socketio.NewClient(u, websocket.NewTransport())
+	err := c.Connect()
+	if err != nil {
+		log.Fatalf("error, %v", err)
+		// panic(err) // you should prefer returning errors than panicking
+	}
 	c.On(socketio.OnConnection, func() {
-		fmt.Print("Connected")
+		log.Print("Connected")
+		fmt.Println("Connected")
 	})
 
 	if err := c.On(socketio.OnError, errorHandler); err != nil {
@@ -59,40 +65,38 @@ func main() {
 		panic(err)
 	}
 
-	err := c.Connect()
-	if err != nil {
-		log.Fatalf("error, %v", err)
-		// panic(err) // you should prefer returning errors than panicking
-	}
-
-	nsp, err := c.Of("accountant")
-	if err := nsp.On(socketio.OnError, errorHandler); err != nil {
-		log.Fatalf("error, namespace %v", err)
+	if err := c.On("ready", readyHandler); err != nil {
 		panic(err)
 	}
 
-	if err := nsp.On(socketio.OnDisconnect, disconnectHandler); err != nil {
-		panic(err)
-	}
+	// nsp, err := c.Of("accountant")
+	// if err := nsp.On(socketio.OnError, errorHandler); err != nil {
+	// 	log.Fatalf("error, namespace %v", err)
+	// 	panic(err)
+	// }
+
+	// if err := nsp.On(socketio.OnDisconnect, disconnectHandler); err != nil {
+	// 	panic(err)
+	// }
 
 	// if err := nsp.On("flight", flightHandler); err != nil {
 	// 	panic(err)
 	// }
 
-	if err := nsp.On("ready", readyHandler); err != nil {
-		panic(err)
-	}
+	// if err := nsp.On("ready", readyHandler); err != nil {
+	// 	panic(err)
+	// }
 
-	if err := nsp.On("skip", skipHandler); err != nil {
-		panic(err)
-	}
+	// if err := nsp.On("skip", skipHandler); err != nil {
+	// 	panic(err)
+	// }
 
 	ctx, cancel := context.WithCancel(context.Background())
 	ticker := time.NewTicker(time.Second)
 
 	g := goodbye{c, cancel}
 
-	if err := nsp.On("goodbye", g.Handler); err != nil {
+	if err := c.On("goodbye", g.Handler); err != nil {
 		panic(err)
 	}
 

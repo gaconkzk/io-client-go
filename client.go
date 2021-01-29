@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"sync"
@@ -345,6 +346,7 @@ func (c *Client) outLoop() {
 		case <-c.ctx.Done():
 			return
 		case mw := <-c.out:
+			log.Printf("write %s", mw.msg)
 			writeMsg(mw, c.conn.WriteMessage)
 		case <-ticker.C:
 			if err := c.conn.WriteMessage(protocol.PingMessage); err != nil {
@@ -535,6 +537,7 @@ func (c *Client) callLoopEvent(namespace string, event string, args ...interface
 }
 
 func (c *Client) incomingHandler(msg *protocol.Message) {
+	log.Printf("msg come: %s - %s, type: %s\n", msg.Method, msg.Source, msg.Type)
 	switch msg.Type {
 	case protocol.MessageTypeOpen:
 		if err := jsonUnmarshalUnpanic([]byte(msg.Source[1:]), &c.header); err != nil {
@@ -564,6 +567,12 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 			def, _ := c.Of(msg.Namespace)
 			def.setReady()
 			c.handleIncomingNamespaceConnection(msg)
+		}
+	case protocol.MessageTypeReady:
+		if msg.Namespace != defaultNamespace {
+			def, _ := c.Of(msg.Namespace)
+			def.setReady()
+			c.handleReadyNamespaceConnection(msg)
 		}
 	default:
 		err := fmt.Errorf("message type %s is not implemented", msg.Type)
@@ -645,6 +654,12 @@ func (c *Client) handleIncomingAckResponse(msg *protocol.Message) {
 }
 
 func (c *Client) handleIncomingNamespaceConnection(msg *protocol.Message) {
+	if h, ok := c.getHandler(msg.Namespace, msg.Method); ok {
+		_ = h.Call()
+	}
+}
+
+func (c *Client) handleReadyNamespaceConnection(msg *protocol.Message) {
 	if h, ok := c.getHandler(msg.Namespace, msg.Method); ok {
 		_ = h.Call()
 	}

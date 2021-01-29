@@ -121,7 +121,7 @@ func NewTransport() *Transport {
 		RequestHeader: http.Header{},
 	}
 
-	t.RequestHeader.Add("User-Agent", "socketio client; (+https://github.com/gaconkzk/gosocket.io)")
+	t.RequestHeader.Add("User-Agent", "socketio client; (+https://github.com/socketio/socket.io-client)")
 
 	return t
 }
