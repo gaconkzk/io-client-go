@@ -19,7 +19,7 @@ func main() {
 	}
 
 	var query = u.Query()
-	query.Add("refresh_token", "7097c7dc588d6717f396220192df4e426a99da84")
+	query.Add("refresh_token", "96078fa8181831718b404d70c0f3d78d76fae8cc")
 	u.RawQuery = query.Encode()
 
 	co := socketio.NewClient(u, websocket.NewTransport())
