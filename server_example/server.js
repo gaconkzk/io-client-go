@@ -9,7 +9,9 @@ console.log('Listening at http://localhost:3000/')
 
 function handler(req, res) {
   res.writeHead(200)
-  res.end('Testing server for http://github.com/gaconkzk/gosocketio example.')
+  res.end(
+    'Testing server for http://github.com/gaconkzk/socketio.io-client-go example.',
+  )
 }
 
 let vehicles = ['Falcon', 'airplane', 'balloon', 'drone']
@@ -89,7 +91,7 @@ io.onconnection = (socket) => {
   })
 }
 
-const nsp = io.of('airports')
+const nsp = io.of('/airports')
 
 io.on('connection', function (socket) {
   console.log('Connecting %s.', socket.id)

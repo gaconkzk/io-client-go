@@ -71,9 +71,9 @@ func typeToText(msgType string) (string, error) {
 		return PingMessage, nil
 	case MessageTypePong:
 		return PongMessage, nil
-	case MessageTypeEmpty:
+	case MessageTypeEmpty, MessageTypeNamespace:
 		return EmptyMessage, nil
-	case MessageTypeEmit, MessageTypeNamespace, MessageTypeAckRequest:
+	case MessageTypeEmit, MessageTypeAckRequest:
 		return CommonMessage, nil
 	case MessageTypeAckResponse:
 		return AckMessage, nil
