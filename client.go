@@ -346,7 +346,6 @@ func (c *Client) outLoop() {
 		case <-c.ctx.Done():
 			return
 		case mw := <-c.out:
-			log.Printf("write %s", mw.msg)
 			writeMsg(mw, c.conn.WriteMessage)
 		case <-ticker.C:
 			if err := c.conn.WriteMessage(protocol.PingMessage); err != nil {
@@ -368,7 +367,6 @@ type msgWriter struct {
 }
 
 func (c *Client) writeMessage(msg string) error {
-	fmt.Printf("write msg: %s\n", msg)
 	mw := &msgWriter{
 		msg: msg,
 	}
@@ -442,9 +440,9 @@ func (c *Client) Of(namespace string) (*Namespace, error) {
 		return n, nil
 	}
 
-	if err := c.maybeOf(namespace); err != nil {
-		return nil, err
-	}
+	// if err := c.maybeOf(namespace); err != nil {
+	// 	return nil, err
+	// }
 
 	n = NewNamespace(c, namespace)
 	c.namespacesLocker.Lock()
@@ -459,6 +457,29 @@ func (c *Client) maybeOf(namespace string) error {
 	// see https://github.com/socketio/socket.io/issues/474
 	if namespace == "" {
 		return nil
+	}
+
+	msg := &protocol.Message{
+		Type:   protocol.MessageTypeNamespace,
+		Method: namespace,
+	}
+
+	command, err := protocol.Encode(msg)
+
+	if err != nil {
+		return err
+	}
+
+	return c.writeMessage(command)
+}
+
+// NamespaceConnect register namespace - should be call after default ready
+func (c *Client) NamespaceConnect(namespace string) error {
+	c.namespacesLocker.RLock()
+	_, ok := c.namespaces[namespace]
+	c.namespacesLocker.RUnlock()
+	if !ok {
+		return errors.New("Namespace not registered")
 	}
 
 	msg := &protocol.Message{
@@ -563,11 +584,10 @@ func (c *Client) incomingHandler(msg *protocol.Message) {
 	case protocol.MessageTypeAckResponse:
 		c.handleIncomingAckResponse(msg)
 	case protocol.MessageTypeEmpty:
-		if msg.Namespace != defaultNamespace {
-			def, _ := c.Of(msg.Namespace)
-			def.setReady()
-			c.handleIncomingNamespaceConnection(msg)
+		if msg.Method == OnConnection {
+			c.callLoopEvent(msg.Namespace, protocol.OnConnection)
 		}
+		c.handleIncomingNamespaceConnection(msg)
 	case protocol.MessageTypeReady:
 		if msg.Namespace != defaultNamespace {
 			def, _ := c.Of(msg.Namespace)

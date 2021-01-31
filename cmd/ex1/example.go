@@ -43,6 +43,10 @@ func main() {
 	c := socketio.NewClient(u, websocket.NewTransport())
 	err := c.Connect()
 
+	c.On(socketio.OnConnection, func() {
+		log.Println("got connection")
+	})
+
 	if err != nil {
 		log.Fatalf("error, %v", err)
 		// panic(err) // you should prefer returning errors than panicking
@@ -53,6 +57,10 @@ func main() {
 		log.Fatalf("error, namespace %v", err)
 		panic(err)
 	}
+
+	err = nsp.On(socketio.OnConnection, func() {
+		log.Println("got connection")
+	})
 
 	if err := nsp.On(socketio.OnDisconnect, disconnectHandler); err != nil {
 		panic(err)

@@ -78,26 +78,34 @@ func Decode(source []byte) (msg *Message, err error) {
 
 func extractNamespace(data string) (namespace string, rest string) {
 	var pos int
+	dat := data
 
-	if len(data) == 0 {
+	dataLength := len(dat)
+	if dataLength == 0 {
 		return "", ""
 	}
+	if dat[0] == '/' {
+		if dataLength > 1 {
+			dat = dat[1:]
+		} else {
+			return "", ""
+		}
+	}
 
-	for i, c := range data {
+	for i, c := range dat {
 		if c == ',' {
 			pos = i
 			break
 		}
 
 		if c == '"' {
-			return "", data
+			return "", dat
 		}
 	}
 
-	namespace = data[0:pos]
-
-	if len(data) > pos+1 {
-		rest = data[pos+1:]
+	namespace = dat[0:pos]
+	if len(dat) > pos+1 {
+		rest = dat[pos+1:]
 	}
 
 	return namespace, rest

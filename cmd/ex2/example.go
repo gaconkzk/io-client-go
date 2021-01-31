@@ -19,29 +19,34 @@ func main() {
 	}
 
 	var query = u.Query()
-	query.Add("refresh_token", "3f9f611a258a13de23c61e5c5fe832d6dc43f351")
+	query.Add("refresh_token", "7097c7dc588d6717f396220192df4e426a99da84")
 	u.RawQuery = query.Encode()
 
 	co := socketio.NewClient(u, websocket.NewTransport())
 	c, err := co.Of("")
+	if err != nil {
+		log.Fatalf("error, %v", err)
+	}
 
-	// nc, err := c.Of("accountant")
-	c.On(socketio.OnConnection, func() {
-		log.Print("Connected")
-		fmt.Println("Connected")
-	})
-
-	if err := c.On(socketio.OnError, errorHandler); err != nil {
-		log.Fatalf("error %v", err)
+	nsp, err := co.Of("accountant")
+	if err != nil {
+		log.Fatalf("error, namespace %v", err)
+		panic(err)
+	}
+	if err := nsp.On(socketio.OnConnection, connectionHandler); err != nil {
+		log.Fatalf("error, namespace %v", err)
+		panic(err)
+	}
+	if err := nsp.On(socketio.OnError, errorHandler); err != nil {
+		log.Fatalf("error, namespace %v", err)
 		panic(err)
 	}
 
-	if err := c.On("connect_error", errorHandler); err != nil {
-		log.Fatalf("error %v", err)
+	if err := nsp.On(socketio.OnDisconnect, disconnectHandler); err != nil {
 		panic(err)
 	}
 
-	if err := c.On("ready", readyHandler); err != nil {
+	if err := nsp.On("ready", readyHandler); err != nil {
 		panic(err)
 	}
 
@@ -50,28 +55,8 @@ func main() {
 		log.Fatalf("error, %v", err)
 		// panic(err) // you should prefer returning errors than panicking
 	}
-
-	// nsp, err := c.Of("accountant")
-	// if err := nsp.On(socketio.OnError, errorHandler); err != nil {
-	// 	log.Fatalf("error, namespace %v", err)
-	// 	panic(err)
-	// }
-
-	// if err := nsp.On(socketio.OnDisconnect, disconnectHandler); err != nil {
-	// 	panic(err)
-	// }
-
-	// if err := nsp.On("flight", flightHandler); err != nil {
-	// 	panic(err)
-	// }
-
-	// if err := nsp.On("ready", readyHandler); err != nil {
-	// 	panic(err)
-	// }
-
-	// if err := nsp.On("skip", skipHandler); err != nil {
-	// 	panic(err)
-	// }
+	// on methods - for default namespace should after connect
+	co.On(socketio.OnConnection, connectionHandler)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	ticker := time.NewTicker(time.Second)
@@ -90,7 +75,8 @@ func main() {
 		case <-ticker.C:
 			// doSomething(c)
 		case <-c.Ready():
-			fmt.Printf("??? ready?")
+			log.Print("Ready for ns connect")
+			co.NamespaceConnect("accountant")
 		}
 	}
 }
@@ -127,6 +113,10 @@ func disconnectHandler() {
 
 func skipHandler(vehicle string) {
 	fmt.Printf("The %s is not in use.\n", vehicle)
+}
+
+func connectionHandler() {
+	log.Print("connected")
 }
 
 func readyHandler() {
