@@ -41,7 +41,7 @@ func Encode(msg *Message, args ...interface{}) (packet string, err error) {
 	}
 
 	if args == nil {
-		return fmt.Sprintf(`%s%s,["%s"]`, result, msg.Namespace, msg.Method), nil
+		return fmt.Sprintf(`%s/%s,["%s"]`, result, msg.Namespace, msg.Method), nil
 	}
 
 	args = append([]interface{}{msg.Method}, args...)
@@ -51,8 +51,7 @@ func Encode(msg *Message, args ...interface{}) (packet string, err error) {
 		return "", err
 	}
 
-	var format = `%s%s,%s`
-
+	var format = `%s/%s,%s`
 	if msg.Namespace == "" {
 		format = `%s%s%s`
 	}

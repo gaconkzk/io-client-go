@@ -10,6 +10,7 @@ import (
 
 	socketio "github.com/gaconkzk/socket.io-client-go"
 	"github.com/gaconkzk/socket.io-client-go/websocket"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	var query = u.Query()
-	query.Add("refresh_token", "96078fa8181831718b404d70c0f3d78d76fae8cc")
+	query.Add("refresh_token", "af3ae41a4cd70e5fb66874b1545c5130e2484221")
 	u.RawQuery = query.Encode()
 
 	co := socketio.NewClient(u, websocket.NewTransport())
@@ -46,8 +47,17 @@ func main() {
 		panic(err)
 	}
 
-	if err := nsp.On("ready", readyHandler); err != nil {
+	if err := nsp.On("ready", func() {
+		msg := NewSend("init", uuid.New(), []map[string]interface{}{{"username": "av1174"}})
+		nsp.Emit("message", msg)
+	}); err != nil {
 		panic(err)
+	}
+
+	if err := nsp.On("message", func(msg map[string]interface{}) {
+		log.Printf("should received message %v", msg)
+	}); err != nil {
+		log.Printf("error received, %v", err)
 	}
 
 	err = co.Connect()
@@ -121,4 +131,24 @@ func connectionHandler() {
 
 func readyHandler() {
 	log.Print("should ok???.\n")
+}
+
+type (
+	// VW3Message message send/receive from socker
+	VW3Message struct {
+		Type  string                   `json:"type,obmitempty"`
+		Send  bool                     `json:"___Send,obmitempty"`
+		Event string                   `json:"event"`
+		UUID  uuid.UUID                `json:"uuid"`
+		Args  []map[string]interface{} `json:"args"`
+	}
+)
+
+func NewSend(event string, uuid uuid.UUID, args []map[string]interface{}) *VW3Message {
+	return &VW3Message{
+		Send:  true,
+		Event: event,
+		UUID:  uuid,
+		Args:  args,
+	}
 }
