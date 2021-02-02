@@ -559,7 +559,7 @@ func (c *Client) callLoopEvent(namespace string, event string, args ...interface
 }
 
 func (c *Client) incomingHandler(msg *protocol.Message) {
-	// log.Printf("msg come: %s - %s, type: %s\n", msg.Method, msg.Source, msg.Type)
+	log.Printf("msg come: %s - %s, type: %s\n", msg.Method, msg.Source, msg.Type)
 	switch msg.Type {
 	case protocol.MessageTypeOpen:
 		if err := jsonUnmarshalUnpanic([]byte(msg.Source[1:]), &c.header); err != nil {

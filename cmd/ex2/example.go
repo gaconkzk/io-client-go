@@ -34,6 +34,7 @@ func main() {
 		log.Fatalf("error, namespace %v", err)
 		panic(err)
 	}
+
 	if err := nsp.On(socketio.OnConnection, connectionHandler); err != nil {
 		log.Fatalf("error, namespace %v", err)
 		panic(err)
